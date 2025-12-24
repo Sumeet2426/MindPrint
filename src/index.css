@@ -1,0 +1,96 @@
+body {
+  margin: 0;
+  font-family: 'Rubik', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* NEURON NETWORK BACKGROUND */
+.neuron-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at center, #a970ff22 0%, #5c28ff11 40%, #000000 100%);
+  overflow: hidden;
+}
+
+.neuron-bg .lines,
+.neuron-bg .dots {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  pointer-events: none;
+}
+
+/* Animated lines (neural connections) */
+.neuron-bg .lines {
+  background-image: url("https://i.imgur.com/ElwO3aM.png");
+  opacity: 0.25;
+  animation: floatLines 18s linear infinite;
+}
+
+/* Floating neuron particles */
+.neuron-bg .dots {
+  background-image: url("https://i.imgur.com/k6QmXcx.png");
+  opacity: 0.4;
+  animation: floatDots 14s ease-in-out infinite alternate;
+}
+
+@keyframes floatLines {
+  from { transform: translateY(-5%); }
+  to { transform: translateY(5%); }
+}
+
+@keyframes floatDots {
+  from { transform: scale(1.0) translateX(-1%); }
+  to { transform: scale(1.05) translateX(1%); }
+}
+
+/* --- Animated Neuron Background --- */
+
+.neuron-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.node {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+  animation: float 10s linear infinite;
+  box-shadow: 0 0 10px rgba(255,255,255,0.9);
+}
+
+/* Randomly place nodes */
+.node:nth-child(odd) {
+  width: 3px;
+  height: 3px;
+}
+
+/* Generate 40 random positions */
+.node:nth-child(1) { top: 10%; left: 20%; animation-duration: 9s; }
+.node:nth-child(2) { top: 30%; left: 70%; animation-duration: 12s; }
+.node:nth-child(3) { top: 60%; left: 40%; animation-duration: 14s; }
+.node:nth-child(4) { top: 80%; left: 10%; animation-duration: 10s; }
+.node:nth-child(5) { top: 50%; left: 90%; animation-duration: 15s; }
+/* Repeat pattern for variety */
+.node:nth-child(6) { top: 14%; left: 45%; animation-duration: 11s; }
+.node:nth-child(7) { top: 77%; left: 64%; animation-duration: 13s; }
+.node:nth-child(8) { top: 22%; left: 35%; animation-duration: 10s; }
+.node:nth-child(9) { top: 88%; left: 75%; animation-duration: 9s; }
+
+@keyframes float {
+  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+  50% { transform: translateY(-20px) scale(1.4); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 0.8; }
+}
