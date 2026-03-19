@@ -21,7 +21,12 @@ mongoose
   .connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connect error:", err));
-
+if (!MONGO) {
+  console.error("MONGODB_URI is missing");
+}
+if (!HF_KEY) {
+  console.error("HF_API_KEY is missing");
+}
 
 // Helper to call HuggingFace
 async function callHF(model, payload) {
@@ -43,6 +48,10 @@ async function callHF(model, payload) {
 
   return res.json();
 }
+
+app.get("/", (req, res) => {
+  res.send("MindPrint backend running");
+});
 
 
 // SIMPLE keyword-based career mapper
