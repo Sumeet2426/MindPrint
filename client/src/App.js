@@ -118,7 +118,7 @@ useEffect(() => {
 
   async function fetchHistory() {
     try {
-      const res = await fetch(`http://localhost:5000/user/${user.uid}`);
+      const res = await fetch(`https://mindprint.onrender.com/user/${user.uid}`);
       const json = await res.json();
       setHistory(json.analyses || []);
     } catch (e) {
@@ -159,7 +159,7 @@ useEffect(() => {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/analyze", {
+      const res = await fetch("https://mindprint.onrender.com/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: journal, uid: user.uid })
