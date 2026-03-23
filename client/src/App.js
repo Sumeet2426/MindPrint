@@ -559,7 +559,7 @@ const options = {
   🎤 {listening ? "Listening..." : "Speak"}
 </Button>
 <Typography sx={{ fontSize: 12, color: "#6b7a83", mt: 1 }}>
-  Voice input is experimental and may not be perfectly accurate.
+ Voice input is experimental and may contain errors. Please review before analyzing.
 </Typography>
                   </Box>
                 </Box>
