@@ -4,7 +4,7 @@ import {
   Container, Grid, Button, TextField, Typography, List, ListItem, ListItemText, Box, IconButton,
   ThemeProvider, createTheme, Menu, MenuItem, Paper
 } from "@mui/material";
-
+import { Line } from "react-chartjs-2";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -243,21 +243,50 @@ useEffect(() => {
     return patterns;
   }, [history]);
 
-  const chartData = results ? {
-    labels: ["Emotion score (synthetic)"],
-    datasets: [{
-      label: "Sentiment",
-      data: [ results.sentiment === "positive" ? 1 : results.sentiment === "negative" ? -1 : 0 ],
-      backgroundColor: ["#2A9D8F"]
-    }]
-  } : null;
-
+  
   const handleMenu = (e) => { setAnchorEl(e.currentTarget); setMenuOpen(true); };
   const handleClose = () => { setAnchorEl(null); setMenuOpen(false); };
 
   const wordCount = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
   const addNote = (n) => setNotes(prev => [n, ...prev]);
+
+const timelineData = history.map(entry => ({
+  date: new Date(entry.date).toLocaleDateString(),
+  sentiment:
+    entry.sentiment === "positive" ? 1 :
+    entry.sentiment === "negative" ? -1 : 0
+}));
+
+const lineChartData = {
+  labels: timelineData.map(d => d.date),
+  datasets: [
+    {
+      label: "Mood Trend",
+      data: timelineData.map(d => d.sentiment),
+      borderColor: "#2A9D8F",
+      tension: 0.3,
+      pointRadius: 5,
+    }
+  ]
+};
+
+const options = {
+  scales: {
+    y: {
+      min: -1,
+      max: 1,
+      ticks: {
+        stepSize: 1,
+        callback: function(value) {
+          if (value === 1) return "Positive";
+          if (value === 0) return "Neutral";
+          if (value === -1) return "Negative";
+        }
+      }
+    }
+  }
+};
 
   return (
     <ThemeProvider theme={theme}>
@@ -465,7 +494,7 @@ useEffect(() => {
               <Grid item xs={12}>
                 <Box sx={{ ...paperCard, p: 4 }}>
                   <Typography className="hand" sx={{ fontSize: 18, fontWeight: 800, color: "#1f2a44", mb: 2 }}>Visualization</Typography>
-                  <Bar data={chartData} />
+                  <Line data={lineChartData} options={options} />
                 </Box>
               </Grid>
             )}
