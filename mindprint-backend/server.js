@@ -145,7 +145,7 @@ app.post("/analyze", async (req, res) => {
       uid,
       text,
       analysis: analysisText,
-      tone: sentiment,
+      sentiment: sentiment,
       emotion,
       careers: career_suggestions,
       date: new Date(),

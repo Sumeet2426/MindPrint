@@ -4,6 +4,7 @@ import {
   Container, Grid, Button, TextField, Typography, List, ListItem, ListItemText, Box, IconButton,
   ThemeProvider, createTheme, Menu, MenuItem, Paper
 } from "@mui/material";
+import { LineElement, PointElement } from "chart.js";
 import { Line } from "react-chartjs-2";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -24,8 +25,16 @@ import AnalysisOverlay from "./components/AnalysisOverlay";
 
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 const theme = createTheme({
   palette: {
     mode: "light",
@@ -125,7 +134,7 @@ useEffect(() => {
       console.error("history fetch", e);
     }
   }
-
+console.log(history);
 
   const handleLogout = async () => {
     try {
@@ -254,8 +263,8 @@ useEffect(() => {
 const timelineData = history.map(entry => ({
   date: new Date(entry.date).toLocaleDateString(),
   sentiment:
-    entry.sentiment === "positive" ? 1 :
-    entry.sentiment === "negative" ? -1 : 0
+    (entry.sentiment || entry.tone) === "positive" ? 1 :
+    (entry.sentiment || entry.tone) === "negative" ? -1 : 0
 }));
 
 const lineChartData = {
@@ -265,7 +274,8 @@ const lineChartData = {
       label: "Mood Trend",
       data: timelineData.map(d => d.sentiment),
       borderColor: "#2A9D8F",
-      tension: 0.3,
+      tension: 0,
+stepped: true,
       pointRadius: 5,
     }
   ]
