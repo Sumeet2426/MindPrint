@@ -192,6 +192,23 @@ export default function LandingPage() {
           </Box>
         </Paper>
       </Box>
+<Box sx={{ maxWidth: 1100, mx: "auto", mt: 6 }}>
+  <Paper sx={{ p: 5, borderRadius: 2 }}>
+    <Typography className="hand" sx={{ fontSize: 28, mb: 2 }}>
+      Why most people fail to understand themselves
+    </Typography>
+
+    <Typography sx={{ color: "#5a5a5a", lineHeight: 1.7 }}>
+      We think we understand ourselves.  
+      But most of our thoughts stay unprocessed.  
+      We forget patterns. We ignore emotions.  
+      And slowly, we repeat the same mistakes.
+      <br /><br />
+      Journaling helps — but only if you can actually *see* what’s happening inside you.
+    </Typography>
+  </Paper>
+</Box>
+
       <Box sx={{ maxWidth: 1100, mx: "auto", mt: 6 }} id="how">
         <Paper sx={{ background: "linear-gradient(180deg,#fffef8,#fff8ea)", p: { xs: 4, md: 6 }, borderRadius: 2, boxShadow: "0 10px 30px rgba(10,10,10,0.12)" }}>
           <Typography className="hand" sx={{ fontSize: 26, color: "#1f2a44", mb: 2 }}>How to journal (tiny guide)</Typography>
@@ -203,6 +220,45 @@ export default function LandingPage() {
           </Box>
         </Paper>
       </Box>
+<Box sx={{ maxWidth: 1100, mx: "auto", mt: 6 }}>
+  <Paper sx={{ p: 5, borderRadius: 2 }}>
+    <Typography className="hand" sx={{ fontSize: 26, mb: 3 }}>
+      How it works
+    </Typography>
+
+    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <FeatureCard title="1. Write freely" desc="Type or speak your thoughts without filtering." />
+      <FeatureCard title="2. AI analyzes patterns" desc="Detects sentiment, emotions, and behavior trends." />
+      <FeatureCard title="3. Get insights" desc="Understand what you're feeling and why." />
+    </Box>
+  </Paper>
+</Box>
+
+<Box sx={{ maxWidth: 1100, mx: "auto", mt: 8, mb: 6 }}>
+  <Paper sx={{ p: 5, borderRadius: 2, textAlign: "center" }}>
+    <Typography className="hand" sx={{ fontSize: 28, mb: 2 }}>
+      Start understanding yourself better
+    </Typography>
+
+    <Typography sx={{ color: "#5a5a5a", mb: 3 }}>
+      A few minutes of honest writing can reveal more than hours of thinking.
+    </Typography>
+
+    <Button
+      onClick={() => setShowLogin(true)}
+      sx={{
+        px: 4,
+        py: 1.5,
+        borderRadius: 3,
+        background: "#f7d88b",
+        fontWeight: 700
+      }}
+    >
+      Start Journaling
+    </Button>
+  </Paper>
+</Box>
+
 {showSample && (
   <Box sx={{
     position: "fixed",
