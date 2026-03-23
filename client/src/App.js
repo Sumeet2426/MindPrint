@@ -134,7 +134,7 @@ useEffect(() => {
       console.error("history fetch", e);
     }
   }
-console.log(history);
+console.log(results);
 
   const handleLogout = async () => {
     try {
@@ -274,7 +274,8 @@ const lineChartData = {
       label: "Mood Trend",
       data: timelineData.map(d => d.sentiment),
       borderColor: "#2A9D8F",
-      tension: 0,
+      tension: 0
+,
 stepped: true,
       pointRadius: 5,
     }
@@ -471,6 +472,30 @@ const options = {
                 </Box>
               </Box>
             </Grid>
+{results && (
+  <Box sx={{ ...paperCard, p: 3, mb: 3 }}>
+    <Typography sx={{ fontWeight: 800, mb: 1 }}>
+      Latest Insight
+    </Typography>
+
+    <Typography>
+      <strong>Sentiment:</strong> {results.sentiment}
+    </Typography>
+
+    <Typography>
+      <strong>Emotion:</strong> {results.emotion}
+    </Typography>
+
+    <Typography>
+      <strong>Why?</strong>
+    </Typography>
+
+    <Typography sx={{ color: "#555" }}>
+  You mentioned: <strong>"{results.text?.slice(0, 60)}..."</strong><br />
+  This suggests feelings of {results.emotion}.
+</Typography>
+  </Box>
+)}
             <Grid item xs={12} md={5}>
               <Box sx={{ ...paperCard, p: { xs: 2.5, md: 4 }, borderRadius: 3 }}>
                 <Typography className="hand" sx={{ fontSize: 18, fontWeight: 800, color: "#1f2a44", mb: 1 }}>Recent Analyses</Typography>
@@ -479,7 +504,7 @@ const options = {
                     <Typography sx={{ color: "#6b7a83" }}>No entries yet. Your saved analyses appear here.</Typography>
                   ) : (
                     <List>
-                      {history.slice().reverse().map(it => (
+                      {history.slice().map(it => (
                         <ListItem key={it._id} sx={{ mb: 1, p: 2.2, borderRadius: 2, background: "#fffaf2", boxShadow: "0 6px 18px rgba(0,0,0,0.04)" }}>
                           <ListItemText
                             primary={<Typography sx={{ fontWeight: 700, color: "#1f2a44" }}>{new Date(it.date).toLocaleString()}</Typography>}

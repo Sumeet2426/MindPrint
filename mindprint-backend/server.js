@@ -136,9 +136,10 @@ app.post("/analyze", async (req, res) => {
 
     // 4. Summary
     const analysisText =
-      `Sentiment: ${sentiment} | ` +
-      `Dominant emotion: ${emotion} | ` +
-      `Suggested careers: ${career_suggestions.join(", ")}`;
+  `Your writing shows a ${sentiment} tone, likely because of words and phrases expressing ${emotion}. 
+This suggests you were feeling ${emotion} during this moment.
+
+Based on your patterns, you tend to approach situations with ${sentiment === "negative" ? "pressure or frustration" : "clarity and engagement"}.`;
 
     // 5. Save to Mongo
     const journal = new Journal({
@@ -158,6 +159,7 @@ app.post("/analyze", async (req, res) => {
       analysis: analysisText,
       emotion,
       sentiment,
+text: text,
       careers: career_suggestions,
       _id: journal._id
     });
