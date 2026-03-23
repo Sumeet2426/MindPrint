@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import {
   Container, Grid, Button, TextField, Typography, List, ListItem, ListItemText, Box, IconButton,
@@ -106,7 +106,11 @@ export default function App() {
 function MainApp({ user, setRouteLoading }) {
   const [journal, setJournal] = useState("");
   const [history, setHistory] = useState([]);
+const [historyLoading, setHistoryLoading] = useState(true);
   const [results, setResults] = useState(null);
+const [expandedId, setExpandedId] = useState(null);
+const [listening, setListening] = useState(false);
+const recognitionRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -121,20 +125,21 @@ useEffect(() => {
 
 
   useEffect(() => {
-    if (!user) return;
-    fetchHistory();
-  }, [user]);
+  if (!user?.uid) return;
+
+  fetchHistory();
+}, [user]);
 
   async function fetchHistory() {
-    try {
-      const res = await fetch(`https://mindprint.onrender.com/user/${user.uid}`);
-      const json = await res.json();
-      setHistory(json.analyses || []);
-    } catch (e) {
-      console.error("history fetch", e);
-    }
+  try {
+    const res = await fetch(`https://mindprint.onrender.com/user/${user.uid}`);
+    const json = await res.json();
+    setHistory(json.analyses || []);
+  } catch (e) {
+    console.error("history fetch", e);
   }
-console.log(results);
+}
+console.log("history:", history);
 
   const handleLogout = async () => {
     try {
@@ -145,7 +150,54 @@ console.log(results);
     }
   };
 
-  const handleDeleteAccount = async () => {
+const startListening = () => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Speech recognition not supported");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "en-US";
+  recognition.interimResults = true;
+  recognition.continuous = true;
+recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    console.log("🎤 Started listening");
+    setListening(true);
+  };
+
+  recognition.onresult = (event) => {
+    console.log("✅ RESULT EVENT:", event);
+
+    let transcript = "";
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+
+    console.log("📝 Transcript:", transcript);
+    setJournal(transcript);
+  };
+
+  recognition.onerror = (e) => {
+    console.log("❌ ERROR:", e);
+    setListening(false);
+  };
+
+ recognition.onend = () => {
+  setTimeout(() => {
+    setListening(false);
+  }, 500);
+};
+
+  recognition.start();
+};  
+
+const handleDeleteAccount = async () => {
   try {
     if (!user) return;
 
@@ -221,6 +273,35 @@ console.log(results);
     return strengths;
   }, [results, history]);
 
+{history.map(it => {
+  const isExpanded = expandedId === it._id;
+
+  return (
+    <ListItem key={it._id}>
+      <ListItemText
+        primary={new Date(it.date).toLocaleString()}
+        secondary={
+          <>
+            <Typography>
+              {isExpanded
+                ? it.analysis
+                : it.analysis}
+            </Typography>
+
+            <Typography
+              onClick={() =>
+                setExpandedId(isExpanded ? null : it._id)
+              }
+              sx={{ cursor: "pointer", color: "#2A4E8A" }}
+            >
+              {isExpanded ? "Show less" : "Read more"}
+            </Typography>
+          </>
+        }
+      />
+    </ListItem>
+  );
+})}
   const derivedCareers = useMemo(() => {
     if (results?.careers) return results.careers;
     const traits = derivedTraits.map(t => t.name.toLowerCase()).join(" ");
@@ -463,6 +544,23 @@ const options = {
                     >
                       {loading ? "Analyzing..." : "Analyze & Save"}
                     </Button>
+
+<Button
+  onClick={startListening}
+  sx={{
+    background: "#cfe8ff",
+    color: "#1f2a44",
+    px: 2,
+    borderRadius: 3,
+    fontWeight: 600,
+    textTransform: "none"
+  }}
+>
+  🎤 {listening ? "Listening..." : "Speak"}
+</Button>
+<Typography sx={{ fontSize: 12, color: "#6b7a83", mt: 1 }}>
+  Voice input is experimental and may not be perfectly accurate.
+</Typography>
                   </Box>
                 </Box>
                 <MoodSticker onSelect={setMood} />
@@ -508,7 +606,7 @@ const options = {
                         <ListItem key={it._id} sx={{ mb: 1, p: 2.2, borderRadius: 2, background: "#fffaf2", boxShadow: "0 6px 18px rgba(0,0,0,0.04)" }}>
                           <ListItemText
                             primary={<Typography sx={{ fontWeight: 700, color: "#1f2a44" }}>{new Date(it.date).toLocaleString()}</Typography>}
-                            secondary={<Typography sx={{ color: "#465b6c" }}>{it.analysis.slice(0, 140)}{it.analysis.length > 140 ? "…" : ""}</Typography>}
+                            secondary={<Typography sx={{ color: "#465b6c" }}>{it.analysis}{it.analysis.length > 140 ? "…" : ""}</Typography>}
                           />
                         </ListItem>
                       ))}
