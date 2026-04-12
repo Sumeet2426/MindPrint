@@ -103,6 +103,302 @@ export default function App() {
   );
 }
 
+const generateInsight = (text, emotion) => {
+text = text.toLowerCase();
+
+
+let traits = {};
+let explanationParts = [];
+let careerSuggestions = [];
+let nextStep = "";
+let finalEmotion = emotion;
+let conflicts = [];
+
+const addTrait = (trait, score) => {
+traits[trait] = (traits[trait] || 0) + score;
+};
+
+// 🔹 EXPLICIT TRAITS
+if (/draw|design|creative|idea|imagine/.test(text)) addTrait("creative", 2);
+if (/analyze|logic|problem|fix|debug/.test(text)) addTrait("analytical", 2);
+if (/people|talk|help|guide|support/.test(text)) addTrait("social", 2);
+if (/lead|manage|organize|plan/.test(text)) addTrait("leadership", 2);
+if (/grind|discipline|routine|consistent|every day/.test(text)) addTrait("discipline", 3);
+
+// 🔹 HIDDEN TRAITS (pattern-based)
+if (/why|meaning|purpose|life|exist/.test(text)) addTrait("philosophical", 2);
+if (/i can|i will|i believe|confident/.test(text)) addTrait("confidence", 2);
+if (/teach|explain|make people understand/.test(text)) addTrait("teaching", 2);
+
+// 🔹 UNCERTAINTY
+if (/maybe|idk|confused|lost/.test(text)) addTrait("uncertain", 2);
+
+// 🔥 STRONG INTENT DETECTION
+if (/i have decided|i will become|i am going to/.test(text)) {
+addTrait("decided", 3);
+}
+
+if (/grind|no matter what|until|won't stop/.test(text)) {
+addTrait("commitment", 3);
+}
+
+if (/top|best|contender|number 1|win/.test(text)) {
+addTrait("competitive", 2);
+}
+
+if (/tournament|official|competition/.test(text)) {
+addTrait("real-world-focus", 2);
+}
+
+if (/if my intentions|self|improve myself/.test(text)) {
+addTrait("self-awareness", 2);
+}
+
+// 🔹 SORT
+const sortedTraits = Object.entries(traits)
+.sort((a, b) => b[1] - a[1])
+.map(([t]) => t);
+
+
+
+// 🔥 CONFLICTS
+if (traits["discipline"] && traits["uncertain"]) {
+conflicts.push("you act consistently but lack direction");
+}
+
+if (traits["analytical"] && traits["philosophical"]) {
+conflicts.push("you think deeply but may over-question things");
+}
+
+// 🔹 EXPLANATION
+if (traits["discipline"]) {
+explanationParts.push("You show signs of discipline — your thinking reflects structure and consistency.");
+}
+
+if (traits["philosophical"]) {
+explanationParts.push("You naturally question deeper meaning, not just surface-level actions.");
+}
+
+if (traits["confidence"]) {
+explanationParts.push("There’s a sense of self-belief in how you express yourself.");
+}
+
+if (traits["teaching"]) {
+explanationParts.push("You have a tendency to guide or explain, which indicates teaching ability.");
+}
+
+if (traits["uncertain"]) {
+explanationParts.push("However, you are still unclear about direction.");
+}
+
+if (conflicts.length > 0) {
+explanationParts.push("There’s a contradiction: " + conflicts.join(", ") + ".");
+}
+
+let explanation = explanationParts.join(" ") || "Pattern not strong yet.";
+
+if (emotion === "joy" && traits["competitive"]) {
+explanationParts.push(
+"You're in a positive and energized state while thinking about this — which can boost performance if used correctly."
+);
+}
+
+if (emotion === "sadness") {
+explanationParts.push(
+"Your current emotional state might be affecting how clearly you're seeing your direction."
+);
+}
+
+if (emotion === "anger") {
+explanationParts.push(
+"There’s strong energy here — if controlled, it can be turned into focused action."
+);
+}
+
+
+// 🔹 CAREER MAPPING (BASED ON TRAIT COMBINATIONS)
+
+// 🎯 DISCIPLINE + PHILOSOPHY + CONFIDENCE
+if (traits["discipline"] && traits["philosophical"] && traits["confidence"]) {
+careerSuggestions.push(
+"Life Coach",
+"Motivational Speaker",
+"Lecturer",
+"Content Creator (Self-development)"
+);
+}
+
+
+
+// 🎯 ANALYTICAL + DISCIPLINE
+if (traits["analytical"] && traits["discipline"]) {
+careerSuggestions.push(
+"Software Engineer",
+"Cybersecurity Specialist",
+"Data Analyst"
+);
+}
+
+// 🎯 SOCIAL + TEACHING
+if (traits["social"] && traits["teaching"]) {
+careerSuggestions.push(
+"Teacher",
+"Trainer",
+"Consultant"
+);
+}
+
+// 🎯 CREATIVE
+if (traits["creative"]) {
+careerSuggestions.push(
+"Designer",
+"Content Creator",
+"UI/UX Designer"
+);
+}
+
+if (
+traits["competitive"] &&
+traits["commitment"] &&
+traits["real-world-focus"]
+) {
+careerSuggestions.push(
+"High-performance competitive path (e.g., Esports, Sports, Trading, Performance-based fields)"
+);
+}
+
+if (traits["competitive"] && traits["commitment"]) {
+explanationParts.push(
+"You’re not just interested — you're aiming to perform and compete seriously."
+);
+}
+
+
+
+
+// 🔹 REMOVE DUPLICATES
+careerSuggestions = [...new Set(careerSuggestions)];
+
+if (careerSuggestions.length === 0) {
+careerSuggestions.push("More input needed to identify strong direction");
+}
+
+// 🔹 EMOTION USAGE (REAL IMPACT)
+if (emotion === "joy" && traits["commitment"]) {
+nextStep =
+"You're in the right state — now convert this momentum into structured action (practice, tracking, competition).";
+} else if (emotion === "sadness") {
+nextStep =
+"Don’t make big decisions right now. Stabilize your state, then reassess.";
+} else if (emotion === "anger") {
+nextStep =
+"Channel this energy into something productive instead of reacting impulsively.";
+} else {
+nextStep = "Act, observe, refine.";
+}
+
+
+return {
+traits: sortedTraits,
+explanation,
+careers: careerSuggestions,
+nextStep,
+emotion: finalEmotion
+};
+};
+
+const analyzeGuidedAnswers = (answers) => {
+let traits = {};
+let explanationParts = [];
+let careers = [];
+let nextStep = "";
+
+const addTrait = (trait, score) => {
+traits[trait] = (traits[trait] || 0) + score;
+};
+
+// Q1: Desire
+if (answers.q1.toLowerCase().includes("game") || answers.q1.toLowerCase().includes("esports")) {
+addTrait("competitive", 2);
+}
+
+// Q2: Behavior
+if (answers.q2 === "Push harder") addTrait("discipline", 2);
+if (answers.q2 === "Avoid") addTrait("uncertain", 2);
+if (answers.q2 === "Overthink") addTrait("analytical", 1);
+
+// Q3: Values
+if (answers.q3 === "Recognition") addTrait("competitive", 2);
+if (answers.q3 === "Freedom") addTrait("passion-driven", 2);
+if (answers.q3 === "Stability") addTrait("practical", 2);
+
+// Q4: Inclination
+if (answers.q4 === "Competing") addTrait("competitive", 2);
+if (answers.q4 === "Creating") addTrait("creative", 2);
+if (answers.q4 === "Solving problems") addTrait("analytical", 2);
+if (answers.q4 === "Helping people") addTrait("social", 2);
+
+// Q5: Conflict
+if (answers.q5.trim()) {
+addTrait("self-awareness", 2);
+explanationParts.push("You are aware of a gap between intention and action.");
+}
+
+// Explanation
+if (traits["competitive"]) {
+explanationParts.push("You're not just interested — you're aiming for performance. But your current patterns will decide if that holds.");
+}
+
+if (traits["discipline"]) {
+explanationParts.push("You push through difficulty instead of backing off. But needed to see if this is consistent across situations.");
+}
+
+if (traits["uncertain"]) {
+explanationParts.push("You tend to hesitate when things get uncomfortable. But needed to see if this is a pattern or just a reaction to specific situations.");
+}
+if (
+traits["competitive"] &&
+(traits["uncertain"] || answers.q2 === "Avoid")
+) {
+explanationParts.push(
+"You say you're drawn toward performance, but your behavior suggests hesitation under pressure."
+);
+}
+
+
+// Careers
+if (traits["competitive"]) {
+careers.push("Competitive fields (Esports, Sports, Performance roles)");
+}
+
+if (traits["analytical"]) {
+careers.push("Technical roles (Engineering, Cybersecurity, Data)");
+}
+
+if (traits["creative"]) {
+careers.push("Creative roles (Design, Content)");
+}
+
+// Next Step
+if (traits["competitive"] && traits["discipline"]) {
+nextStep = "You need structured execution — practice, tracking, and real competition.";
+} else if (traits["uncertain"]) {
+nextStep = "Reduce hesitation. Start small and build consistency.";
+} else {
+nextStep = "Act, observe, refine.";
+}
+
+return {
+traits: Object.keys(traits),
+explanation: explanationParts.join(" "),
+careers: [...new Set(careers)],
+nextStep,
+emotion: "guided"
+};
+};
+
+
+
 function MainApp({ user, setRouteLoading }) {
   const [journal, setJournal] = useState("");
   const [history, setHistory] = useState([]);
@@ -117,11 +413,31 @@ const recognitionRef = useRef(null);
   const [mood, setMood] = useState(null);
   const [notes, setNotes] = useNotes();
   const navigate = useNavigate();
+  const [mode, setMode] = useState("journal"); // "journal" or "guided"
+
+const [guidedAnswers, setGuidedAnswers] = useState({
+q1: "",
+q2: "",
+q3: "",
+q4: "",
+q5: ""
+});
+
 
 
 useEffect(() => {
   localStorage.setItem("notes", JSON.stringify(notes));
 }, [notes]);
+
+const insight = useMemo(() => {
+if (!results) return null;
+
+if (results.emotion === "guided") {
+return analyzeGuidedAnswers(JSON.parse(results.text));
+}
+
+return generateInsight(results.text || "", results.emotion);
+}, [results]);
 
 
   useEffect(() => {
@@ -273,45 +589,59 @@ const handleDeleteAccount = async () => {
     return strengths;
   }, [results, history]);
 
-{history.map(it => {
-  const isExpanded = expandedId === it._id;
 
-  return (
-    <ListItem key={it._id}>
-      <ListItemText
-        primary={new Date(it.date).toLocaleString()}
-        secondary={
-          <>
-            <Typography>
-              {isExpanded
-                ? it.analysis
-                : it.analysis}
-            </Typography>
+const detectedTraits = useMemo(() => {
+  const text = journal.toLowerCase();
 
-            <Typography
-              onClick={() =>
-                setExpandedId(isExpanded ? null : it._id)
-              }
-              sx={{ cursor: "pointer", color: "#2A4E8A" }}
-            >
-              {isExpanded ? "Show less" : "Read more"}
-            </Typography>
-          </>
-        }
-      />
-    </ListItem>
-  );
-})}
+  let traits = [];
+
+  if (/draw|design|creative|idea|imagine/.test(text)) traits.push("creative");
+  if (/analyze|logic|problem|fix|debug/.test(text)) traits.push("analytical");
+  if (/people|talk|help|guide|support/.test(text)) traits.push("social");
+  if (/lead|manage|organize|plan/.test(text)) traits.push("leadership");
+
+  return traits;
+}, [journal]);
+
   const derivedCareers = useMemo(() => {
-    if (results?.careers) return results.careers;
-    const traits = derivedTraits.map(t => t.name.toLowerCase()).join(" ");
-    const out = [];
-    if (traits.includes("creativity")) out.push("Creative Strategist / UX");
-    if (traits.includes("problem solving")) out.push("Analyst / Researcher");
-    if (traits.includes("communication")) out.push("Content / Community");
-    if (out.length === 0) out.push("Generalist roles (explore more entries)");
-    return out;
-  }, [results, derivedTraits]);
+  if (!results) return [];
+
+  const emotion = results.emotion;
+  const traits = detectedTraits;
+
+  let suggestions = [];
+
+  if (traits.includes("creative")) {
+    suggestions.push("UI/UX Designer", "Content Creator", "Graphic Designer");
+  }
+
+  if (traits.includes("analytical")) {
+    suggestions.push("Data Analyst", "Software Engineer", "Researcher");
+  }
+
+  if (traits.includes("social")) {
+    suggestions.push("Psychologist", "HR Manager", "Teacher");
+  }
+
+  if (traits.includes("leadership")) {
+    suggestions.push("Entrepreneur", "Project Manager");
+  }
+
+  // Emotion-based adjustment
+  if (emotion === "sadness" && traits.includes("creative")) {
+    suggestions.push("Writing / Art Therapy Fields");
+  }
+
+  if (emotion === "anger" && traits.includes("analytical")) {
+    suggestions.push("Problem-solving roles like Debugging / Systems Engineering");
+  }
+
+  if (suggestions.length === 0) {
+    suggestions.push("Explore multiple fields — more entries needed");
+  }
+
+  return [...new Set(suggestions)];
+}, [results, detectedTraits]);
 
   const weeklyPatterns = useMemo(() => {
     const recent = history.slice(-7).reverse();
@@ -463,6 +793,26 @@ const options = {
   </Box>
 </Box>
 
+<Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+<Button
+variant={mode === "journal" ? "contained" : "outlined"}
+onClick={() => setMode("journal")}
+
+>
+
+Journaling </Button>
+
+<Button
+variant={mode === "guided" ? "contained" : "outlined"}
+onClick={() => setMode("guided")}
+
+>
+
+Guided Mode </Button>
+
+</Box>
+
+
           <Grid spacing={6} alignItems="flex-start">
             <Grid item xs={12} md={7}>
               <Box
@@ -489,25 +839,205 @@ const options = {
                   minHeight: 240,
                   boxShadow: "inset 0 2px 8px rgba(0,0,0,0.03)",
                 }}>
-                  <TextField
-                    value={journal}
-                    onChange={(e) => setJournal(e.target.value)}
-                    placeholder="Write what you're feeling, thinking, or struggling with..."
-                    multiline
-                    rows={10}
-                    fullWidth
-                    variant="standard"
-                    InputProps={{
-                      disableUnderline: true,
-                      style: {
-                        fontFamily: "'Patrick Hand', 'Segoe Script', cursive",
-                        fontSize: 18,
-                        color: "#2b2b2b",
-                        background: "transparent",
-                        padding: 8,
-                      }
-                    }}
-                  />
+                  {mode === "journal" ? (
+<TextField
+value={journal}
+onChange={(e) => setJournal(e.target.value)}
+onKeyDown={(e) => {
+if (e.key === "Enter" && !e.shiftKey) {
+e.preventDefault();
+analyzeJournal(); // or your analyze logic
+}
+}}
+multiline
+rows={10}
+fullWidth
+placeholder="Write what you're feeling..."
+/>
+) : (
+<Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+<Typography sx={{ fontWeight: 600, mb: 2 }}>
+Answer honestly — this will reflect patterns you might not notice yourself. </Typography>
+{/* Q1 */}
+<Box>
+  <Typography fontWeight={600}>
+    Q1. What are you seriously considering pursuing right now?
+  </Typography>
+  <Typography variant="caption" color="text.secondary">
+    This reflects your current direction
+  </Typography>
+  <TextField
+    fullWidth
+    sx={{ mt: 1 }}
+    value={guidedAnswers.q1}
+    onChange={(e) =>
+      setGuidedAnswers({ ...guidedAnswers, q1: e.target.value })
+    }
+    onKeyDown={(e) => {
+if (e.key === "Enter" && !e.shiftKey) {
+e.preventDefault();
+
+  if (!guidedAnswers.q1 || !guidedAnswers.q2 || !guidedAnswers.q3 || !guidedAnswers.q4) {
+    alert("Answer all required questions first");
+    return;
+  }
+
+  setLoading(true);
+
+  setTimeout(() => {
+    setResults({
+      text: JSON.stringify(guidedAnswers),
+      emotion: "guided"
+    });
+    setLoading(false);
+  }, 1000);
+}
+
+}}
+  />
+</Box>
+
+{/* Q2 */}
+<Box>
+  <Typography fontWeight={600}>
+    Q2. When things get difficult, what do you usually do?
+  </Typography>
+  <Typography variant="caption" color="text.secondary">
+    Behavior under pressure
+  </Typography>
+
+  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+    {["Push harder", "Avoid", "Overthink"].map((opt) => (
+      <Button
+        key={opt}
+        variant={guidedAnswers.q2 === opt ? "contained" : "outlined"}
+sx={{
+backgroundColor: guidedAnswers.q2 === opt ? "#3b82f6" : "",
+color: guidedAnswers.q2 === opt ? "#fff" : "",
+fontWeight: 600
+}}
+
+        onClick={() =>
+          setGuidedAnswers({ ...guidedAnswers, q2: opt })
+        }
+      >
+        {opt}
+      </Button>
+    ))}
+  </Box>
+</Box>
+
+{/* Q3 */}
+<Box>
+  <Typography fontWeight={600}>
+    Q3. What matters more to you right now?
+  </Typography>
+  <Typography variant="caption" color="text.secondary">
+    Your current priority
+  </Typography>
+
+  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+    {["Stability", "Freedom", "Recognition", "Learning"].map((opt) => (
+      <Button
+        key={opt}
+        variant={guidedAnswers.q3 === opt ? "contained" : "outlined"}
+sx={{
+backgroundColor: guidedAnswers.q3 === opt ? "#3b82f6" : "",
+color: guidedAnswers.q3 === opt ? "#fff" : "",
+fontWeight: 600
+}}
+
+        onClick={() =>
+          setGuidedAnswers({ ...guidedAnswers, q3: opt })
+        }
+      >
+        {opt}
+      </Button>
+    ))}
+  </Box>
+</Box>
+
+{/* Q4 */}
+<Box>
+  <Typography fontWeight={600}>
+    Q4. What kind of situation excites you more?
+  </Typography>
+  <Typography variant="caption" color="text.secondary">
+    Your natural inclination
+  </Typography>
+
+  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+    {["Competing", "Creating", "Solving problems", "Helping people"].map((opt) => (
+      <Button
+        key={opt}
+       variant={guidedAnswers.q4 === opt ? "contained" : "outlined"}
+sx={{
+backgroundColor: guidedAnswers.q4 === opt ? "#3b82f6" : "",
+color: guidedAnswers.q4 === opt ? "#fff" : "",
+fontWeight: 600
+}}
+
+        onClick={() =>
+          setGuidedAnswers({ ...guidedAnswers, q4: opt })
+        }
+      >
+        {opt}
+      </Button>
+    ))}
+  </Box>
+</Box>
+
+{(guidedAnswers.q2 || guidedAnswers.q4) && (
+<Typography sx={{ mt: 2, fontSize: 13, color: "#555" }}>
+Pattern forming:{" "}
+{guidedAnswers.q2 === "Avoid" && "You tend to pull back under pressure. "}
+{guidedAnswers.q2 === "Push harder" && "You tend to push through difficulty. "}
+{guidedAnswers.q4 === "Competing" && "You’re drawn toward performance and competition. "} </Typography>
+)}
+
+{/* Q5 */}
+<Box>
+  <Typography fontWeight={600}>
+    Q5. What are you avoiding right now?
+  </Typography>
+  <Typography variant="caption" color="text.secondary">
+    Internal resistance
+  </Typography>
+  <TextField
+    fullWidth
+    sx={{ mt: 1 }}
+    value={guidedAnswers.q5}
+    onChange={(e) =>
+      setGuidedAnswers({ ...guidedAnswers, q5: e.target.value })
+    }
+    onKeyDown={(e) => {
+if (e.key === "Enter" && !e.shiftKey) {
+e.preventDefault();
+
+  if (!guidedAnswers.q1 || !guidedAnswers.q2 || !guidedAnswers.q3 || !guidedAnswers.q4) {
+    alert("Answer all required questions first");
+    return;
+  }
+
+  setLoading(true);
+
+  setTimeout(() => {
+    setResults({
+      text: JSON.stringify(guidedAnswers),
+      emotion: "guided"
+    });
+    setLoading(false);
+  }, 1000);
+}
+
+}}
+  />
+</Box>
+
+  </Box>
+)}
+
+
                 </Box>
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
@@ -528,22 +1058,43 @@ const options = {
                   <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                     {loading && <NeuralLoader />}
                     <Button
-                      onClick={analyzeJournal}
-                      startIcon={<TrendingUpIcon />}
-                      sx={{
-                        background: "#ffd88a",
-                        color: "#1f2a44",
-                        px: 3,
-                        py: 1,
-                        borderRadius: 3,
-                        fontWeight: 700,
-                        textTransform: "none",
-                        boxShadow: "0 10px 24px rgba(0,0,0,0.12)"
-                      }}
-                      disabled={loading}
-                    >
-                      {loading ? "Analyzing..." : "Analyze & Save"}
-                    </Button>
+startIcon={<TrendingUpIcon />}
+sx={{
+background: "#ffd88a",
+color: "#1f2a44",
+px: 3,
+py: 1,
+borderRadius: 3,
+fontWeight: 700,
+textTransform: "none",
+boxShadow: "0 10px 24px rgba(0,0,0,0.12)"
+}}
+disabled={loading}
+onClick={() => {
+if (mode === "journal") {
+analyzeJournal();
+} else {
+if (!guidedAnswers.q1 || !guidedAnswers.q2 || !guidedAnswers.q3 || !guidedAnswers.q4) {
+alert("Answer all required questions first");
+return;
+}
+setLoading(true);
+
+setTimeout(() => {
+  setResults({
+    text: JSON.stringify(guidedAnswers),
+    emotion: "guided"
+  });
+  setLoading(false);
+}, 1200);
+
+}
+}}
+
+>
+
+{loading ? "Analyzing..." : "Analyze & Save"} </Button>
+
 
 <Button
   onClick={startListening}
@@ -570,7 +1121,7 @@ const options = {
                 </Box>
               </Box>
             </Grid>
-{results && (
+{results && insight && (
   <Box sx={{ ...paperCard, p: 3, mb: 3 }}>
     <Typography sx={{ fontWeight: 800, mb: 1 }}>
       Latest Insight
@@ -581,16 +1132,42 @@ const options = {
     </Typography>
 
     <Typography>
-      <strong>Emotion:</strong> {results.emotion}
+     <strong>Emotion:</strong> 
+{insight.emotion === "thinking" ? "Thoughtful / Reflective" : insight.emotion}
+    </Typography>
+
+    <Typography sx={{ mt: 1 }}>
+      <strong>Understanding:</strong>
+    </Typography>
+
+    <Typography sx={{ color: "#555", mb: 1 }}>
+      {insight.explanation}
     </Typography>
 
     <Typography>
-      <strong>Why?</strong>
+      <strong>Detected Traits:</strong>{" "}
+      {insight.traits.length > 0
+        ? insight.traits.join(", ")
+        : "Still discovering"}
     </Typography>
 
-    <Typography sx={{ color: "#555" }}>
-  You mentioned: <strong>"{results.text?.slice(0, 60)}..."</strong><br />
-  This suggests feelings of {results.emotion}.
+    <Typography sx={{ mt: 1 }}>
+      <strong>Suggested Paths:</strong>
+    </Typography>
+
+    {insight.careers.map((c, i) => (
+      <Typography key={i} sx={{ color: "#2b2b2b" }}>
+        • {c}
+      </Typography>
+
+
+    ))}
+<Typography sx={{ mt: 2 }}>
+  <strong>Suggested Approach:</strong>
+</Typography>
+
+<Typography sx={{ color: "#555" }}>
+  {insight.nextStep}
 </Typography>
   </Box>
 )}
@@ -617,7 +1194,7 @@ const options = {
 
               <Box sx={{ height: 18 }} />
 
-              <CareerImpression careers={derivedCareers} />
+             <CareerImpression careers={insight?.careers || []} />
               <TraitAnalysis traits={derivedTraits} />
               <StrengthProfile strengths={derivedStrengths} />
               <WeeklyPatternPage patterns={weeklyPatterns} />
@@ -669,8 +1246,11 @@ function CareerImpression({ careers = [] }) {
   return (
     <Box sx={{ ...paperCard, p: 3, mt: 3, borderRadius: 3 }}>
       <Typography className="hand" sx={{ fontSize: 20, fontWeight: 800, color: "#1f2a44", mb: 1 }}>Career Impressions</Typography>
+<Typography sx={{ fontSize: 14, color: "#888", mb: 1 }}>
+  Based on your current thinking patterns:
+</Typography>
       {careers.length === 0 ? (
-        <Typography sx={{ color: "#6b7a83" }}>Write a few entries to discover matching roles.</Typography>
+        <Typography sx={{ color: "#6b7a83" }}>"No strong patterns yet — write more to get clearer career suggestions."</Typography>
       ) : careers.map((c, i) => (
         <Typography key={i} sx={{ fontSize: 17, mb: 0.8, fontFamily: "'Patrick Hand', cursive", color: "#2b2b2b" }}>• {c}</Typography>
       ))}

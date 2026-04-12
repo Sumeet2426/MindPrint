@@ -21,12 +21,45 @@ import { deleteUser } from "firebase/auth";
 
 
 export default function LandingPage() {
+  const [showMindset, setShowMindset] = useState(false);
   const [showSample, setShowSample] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+
+  const handleAuth = async () => {
+try {
+if (isLogin) {
+await signInWithEmailAndPassword(auth, email, password);
+} else {
+const userCred = await createUserWithEmailAndPassword(
+auth,
+email,
+password
+);
+
+
+  await updateProfile(auth.currentUser, {
+    displayName: username,
+  });
+
+  await setDoc(doc(db, "users", userCred.user.uid), {
+    username,
+    email,
+    createdAt: new Date(),
+  });
+}
+
+setShowLogin(false);
+
+
+} catch (err) {
+alert(err.message);
+}
+};
+
 
   return (
     <Box
@@ -83,7 +116,7 @@ export default function LandingPage() {
         </Paper>
 
         <Button
-          onClick={() => setShowLogin(true)}
+          onClick={() => setShowMindset(true)}
           sx={{
             pointerEvents: "auto",
             px: 3,
@@ -314,6 +347,80 @@ Maybe this is a good place to start.`}
   </Box>
 )}
 
+{showMindset && (
+<Box
+sx={{
+position: "fixed",
+inset: 0,
+zIndex: 120,
+display: "flex",
+alignItems: "center",
+justifyContent: "center",
+background: "rgba(12,12,12,0.6)"
+}}
+
+>
+
+<Paper
+
+  sx={{
+    width: 420,
+    maxWidth: "90%",
+    p: 4,
+    borderRadius: 3,
+    textAlign: "center",
+    background: "linear-gradient(180deg,#fffdf6,#fff7ea)",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.4)"
+  }}
+>
+  <Typography sx={{ fontSize: 18, fontWeight: 700, mb: 1 }}>
+    Before you begin
+  </Typography>
+
+  <Typography sx={{ fontSize: 13, color: "#888", mb: 2 }}>
+    This space is for reflection, not performance.
+  </Typography>
+
+  <Typography sx={{ color: "#444", lineHeight: 1.6 }}>
+    Don’t try to sound right.  
+    Don’t try to impress.  
+    <br /><br />
+    Just be honest.
+  </Typography>
+
+  <TextField
+    fullWidth
+    placeholder="What are you avoiding writing today?"
+    sx={{ mt: 3 }}
+  />
+
+  <Typography sx={{ mt: 3, fontStyle: "italic", color: "#666" }}>
+    This only works if you stop filtering yourself.
+  </Typography>
+
+  <Button
+    sx={{
+      mt: 4,
+      px: 3,
+      py: 1,
+      borderRadius: 3,
+      background: "#f7d88b",
+      fontWeight: 700
+    }}
+    onClick={() => {
+      setShowMindset(false);
+      setShowLogin(true);
+    }}
+  >
+    Continue
+  </Button>
+</Paper>
+
+  </Box>
+)}
+
+
+
        {showLogin && (
         <Box
           sx={{
@@ -336,7 +443,15 @@ Maybe this is a good place to start.`}
               </IconButton>
             </Box>
 
-            <Box sx={{ mt: 2 }}>
+            <Box
+component="form"
+sx={{ mt: 2 }}
+onSubmit={(e) => {
+e.preventDefault();
+handleAuth();
+}}
+
+>
               {!isLogin && (
                 <TextField
                   fullWidth
@@ -365,43 +480,19 @@ Maybe this is a good place to start.`}
               />
 
               <Button
-                fullWidth
-                onClick={async () => {
-                  try {
-                    if (isLogin) {
-                      await signInWithEmailAndPassword(auth, email, password);
-                    } else {
-                      const userCred = await createUserWithEmailAndPassword(
-                        auth,
-                        email,
-                        password
-                      );
+fullWidth
+type="submit"
+sx={{
+background: "#f7d88b",
+color: "#1f2a44",
+fontWeight: 700,
+textTransform: "none",
+}}
 
-                      await updateProfile(auth.currentUser, {
-                        displayName: username,
-                      });
+>
 
-                      await setDoc(doc(db, "users", userCred.user.uid), {
-                        username,
-                        email,
-                        createdAt: new Date(),
-                      });
-                    }
+{isLogin ? "Login" : "Sign Up"} </Button>
 
-                    setShowLogin(false);
-                  } catch (err) {
-                    alert(err.message);
-                  }
-                }}
-                sx={{
-                  background: "#f7d88b",
-                  color: "#1f2a44",
-                  fontWeight: 700,
-                  textTransform: "none",
-                }}
-              >
-                {isLogin ? "Login" : "Sign Up"}
-              </Button>
 
               <Button
                 fullWidth
